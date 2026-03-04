@@ -44,7 +44,7 @@ fun ScoresScreen() {
                 OutlinedButton(onClick = { /* TODO later */ }) {
                     Text("Men")
                 }
-                OutlinedButton(onClick = { /* TODO later */ }) {
+                OutlinedButton(onClick = { println("refresh pressed (TODO)") }) {
                     Text("Refresh")
                 }
             }
