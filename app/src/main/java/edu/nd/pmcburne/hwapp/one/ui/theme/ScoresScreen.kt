@@ -7,29 +7,25 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-
-data class FakeGame(
-    val away: String,
-    val home: String,
-    val statusText: String,
-    val detailText: String
-)
+import edu.nd.pmcburne.hwapp.one.domain.GameStatus
+import edu.nd.pmcburne.hwapp.one.domain.Gender
+import edu.nd.pmcburne.hwapp.one.domain.Game
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScoresScreen() {
-    val today = DateStuff.todayKey()
-
-    val fakeGames = listOf(
-        FakeGame("UVA", "VT", "Live", "Score: 33-46 • 2nd • 18:00"),
-        FakeGame("Duke", "UNC", "Upcoming", "Start: 6:30 PM"),
-        FakeGame("Kansas", "Baylor", "Final", "Final: 60-55")
+    val state = ScoresUiState(
+        selectedDateKey = DateStuff.todayKey(),
+        gender = Gender.MEN,
+        games = listOf(
+            Game("1", "UVA", "VT", GameStatus.LIVE, awayScore = 37, homeScore = 41, periodText = "2nd", clockText = "17:30"),
+            Game("2", "Duke", "UNC", GameStatus.PRE, startTimeText = "7:00 PM"),
+            Game("3", "Kansas", "Baylor", GameStatus.FINAL, awayScore = 65, homeScore = 60)
+        )
     )
 
     Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("Basketball Scores") })
-        }
+        topBar = { TopAppBar(title = { Text("Basketball Scores") }) }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -38,11 +34,11 @@ fun ScoresScreen() {
                 .fillMaxSize()
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedButton(onClick = { /* TODO later */ }) {
-                    Text(DateStuff.pretty(today))
+                OutlinedButton(onClick = { /* TODO */ }) {
+                    Text(DateStuff.pretty(state.selectedDateKey))
                 }
-                OutlinedButton(onClick = { /* TODO later */ }) {
-                    Text("Men")
+                OutlinedButton(onClick = { /* TODO */ }) {
+                    Text(state.gender.label)
                 }
                 OutlinedButton(onClick = { println("refresh pressed (TODO)") }) {
                     Text("Refresh")
@@ -52,13 +48,8 @@ fun ScoresScreen() {
             Spacer(Modifier.height(12.dp))
 
             LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                items(fakeGames) { g ->
-                    GameRow(
-                        away = g.away,
-                        home = g.home,
-                        statusText = g.statusText,
-                        detailText = g.detailText
-                    )
+                items(state.games) { g ->
+                    GameRow(g)
                 }
             }
         }
