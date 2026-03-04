@@ -1,28 +1,34 @@
 package edu.nd.pmcburne.hwapp.one.ui.theme
 
+import android.app.DatePickerDialog
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import edu.nd.pmcburne.hwapp.one.domain.GameStatus
-import edu.nd.pmcburne.hwapp.one.domain.Gender
-import edu.nd.pmcburne.hwapp.one.domain.Game
+import androidx.lifecycle.viewmodel.compose.viewModel
+import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScoresScreen() {
-    val state = ScoresUiState(
-        selectedDateKey = DateStuff.todayKey(),
-        gender = Gender.MEN,
-        games = listOf(
-            Game("1", "UVA", "VT", GameStatus.LIVE, awayScore = 37, homeScore = 41, periodText = "2nd", clockText = "17:30"),
-            Game("2", "Duke", "UNC", GameStatus.PRE, startTimeText = "7:00 PM"),
-            Game("3", "Kansas", "Baylor", GameStatus.FINAL, awayScore = 65, homeScore = 60)
-        )
-    )
+fun ScoresScreen(vm: ScoresViewModel = viewModel()) {
+    val state by vm.state.collectAsState()
+    val context = LocalContext.current
+
+    fun openDatePicker() {
+        val current = LocalDate.parse(state.selectedDateKey) // yyyy-MM-dd
+        DatePickerDialog(
+            context,
+            { _, y, m, d ->
+                val key = "%04d-%02d-%02d".format(y, m + 1, d)
+                vm.setDate(key)
+            },
+            current.year, current.monthValue - 1, current.dayOfMonth
+        ).show()
+    }
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("Basketball Scores") }) }
@@ -34,13 +40,13 @@ fun ScoresScreen() {
                 .fillMaxSize()
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedButton(onClick = { /* TODO */ }) {
+                OutlinedButton(onClick = { openDatePicker() }) {
                     Text(DateStuff.pretty(state.selectedDateKey))
                 }
-                OutlinedButton(onClick = { /* TODO */ }) {
+                OutlinedButton(onClick = { vm.toggleGender() }) {
                     Text(state.gender.label)
                 }
-                OutlinedButton(onClick = { println("refresh pressed (TODO)") }) {
+                OutlinedButton(onClick = { vm.refresh() }) {
                     Text("Refresh")
                 }
             }
