@@ -19,7 +19,7 @@ fun ScoresScreen(vm: ScoresViewModel = viewModel()) {
     val context = LocalContext.current
 
     fun openDatePicker() {
-        val current = LocalDate.parse(state.selectedDateKey) // yyyy-MM-dd
+        val current = LocalDate.parse(state.selectedDateKey)
         DatePickerDialog(
             context,
             { _, y, m, d ->
@@ -51,11 +51,28 @@ fun ScoresScreen(vm: ScoresViewModel = viewModel()) {
                 }
             }
 
+            if (state.lastError != null) {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = "Error: ${state.lastError}",
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+
             Spacer(Modifier.height(12.dp))
 
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                items(state.games) { g ->
-                    GameRow(g)
+            if (state.isLoading) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                    CircularProgressIndicator()
+                }
+                Spacer(Modifier.height(12.dp))
+            }
+
+            if (state.games.isEmpty() && !state.isLoading) {
+                Text("No games found. Try a different date or refresh.")
+            } else {
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    items(state.games) { g -> GameRow(g) }
                 }
             }
         }
