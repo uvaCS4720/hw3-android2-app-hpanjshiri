@@ -11,10 +11,12 @@ import android.content.Context
 import edu.nd.pmcburne.hwapp.one.data.local.AppDatabase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import edu.nd.pmcburne.hwapp.one.data.util.NetworkMonitor
 
 class ScoresRepository(context: Context) {
 
     private val dao = AppDatabase.get(context).gameDao()
+    private val network = NetworkMonitor(context)
 
     private val api: NcaaApiService = Retrofit.Builder()
         .baseUrl("https://ncaa-api.henrygd.me/")
@@ -28,22 +30,24 @@ class ScoresRepository(context: Context) {
         }
     }
 
-    suspend fun refreshToDb(dateKey: String, gender: Gender) {
-        val (yyyy, mm, dd) = dateKey.split("-")
+    /**
+     * returns true if network refresh happened, false if skipped (offline)
+     */
+    suspend fun refreshToDb(dateKey: String, gender: Gender): Boolean {
+        if (!network.isOnline()) {
+            return false
+        }
 
-        val dto = api.getScoreboard(
-            gender = gender.urlSegment,
-            yyyy = yyyy,
-            mm = mm,
-            dd = dd
-        )
+        val (yyyy, mm, dd) = dateKey.split("-")
+        val dto = api.getScoreboard(gender.urlSegment, yyyy, mm, dd)
 
         val entities = dto.games.map { wrapper ->
             GameMapper.dtoToEntity(wrapper.game, dateKey, gender)
         }
 
-        // simple approach: clear then insert
         dao.clearDate(dateKey, gender.name)
         dao.upsertAll(entities)
+
+        return true
     }
 }

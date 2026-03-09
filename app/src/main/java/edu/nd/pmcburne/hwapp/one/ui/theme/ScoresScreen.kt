@@ -51,6 +51,14 @@ fun ScoresScreen(vm: ScoresViewModel = viewModel()) {
                 }
             }
 
+            if (state.isOffline) {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = "Offline: showing cached games",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+
             if (state.lastError != null) {
                 Spacer(Modifier.height(8.dp))
                 Text(

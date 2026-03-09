@@ -57,7 +57,8 @@ class ScoresViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true, lastError = null)
             try {
-                repo.refreshToDb(_state.value.selectedDateKey, _state.value.gender)
+                val didNetwork = repo.refreshToDb(_state.value.selectedDateKey, _state.value.gender)
+                _state.value = _state.value.copy(isOffline = !didNetwork)
             } catch (e: Exception) {
                 _state.value = _state.value.copy(lastError = e.message ?: "Refresh failed")
             } finally {
